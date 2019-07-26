@@ -5,19 +5,20 @@ var circles = [];
 var data = {
     boundingWidth: 1000,
     boundingHeight: 1000,
-    boundingDepth: 200,
-    maxR: 4,
-    minR: 1,
-    numberCircles: 100,
-    ballColor: "#ff0000",
-    lineColor: "#0000ff",
+    boundingDepth: 500,
+    maxR: 3,
+    minR: .5,
+    numberCircles: 150,
+    ballColor: "#ffffff",
+    lineColor: "#ffffff",
     backgroundColor: "#000000",
-    maxLineLength: 200,
-    lineStartThin: 30,
+    maxLineLength: 250,
+    lineStartThin: 100,
     minLineLength: 0,
-    speedX: 2,
-    speedY: 2,
-    speedZ: 5
+    maxLineWidth: .5,
+    speedX: 1,
+    speedY: 1,
+    speedZ: 1
 
 };
 
@@ -62,12 +63,22 @@ function drawLines() {
 
             var dist = Math.sqrt((distZ * distZ) + (distX * distX) + (distY * distY))
 
+            if(dist < data.lineStartThin) {
+                var currentLineWidth = data.maxLineWidth;
+            } else {
+                var thinRange = data.maxLineLength - data.lineStartThin;
+                var dividedWidth = data.maxLineWidth / thinRange;
+                var amountOverThin = dist - data.lineStartThin;
+                var currentLineWidth = data.maxLineWidth - (dividedWidth * amountOverThin);
+            }
+            
+
             if(dist < data.maxLineLength) {
                 ctx.beginPath();
                 ctx.moveTo(circles[i].x, circles[i].y);
                 ctx.lineTo(circles[j].x, circles[j].y);
                 ctx.strokeStyle = data.lineColor;
-                ctx.strokeWidth = "3px";
+                ctx.lineWidth = currentLineWidth;
                 ctx.stroke()
             }
         }
