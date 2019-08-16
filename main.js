@@ -8,7 +8,7 @@ var data = {
     boundingDepth: 500,
     maxR: 3,
     minR: .5,
-    numberCircles: 100,
+    numberCircles: 200,
     ballColor: "#ffffff",
     lineColor: "#ffffff",
     backgroundColor: "#000000",
