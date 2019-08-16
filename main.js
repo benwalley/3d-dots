@@ -8,7 +8,7 @@ var data = {
     boundingDepth: 500,
     maxR: 3,
     minR: .5,
-    numberCircles: 150,
+    numberCircles: 100,
     ballColor: "#ffffff",
     lineColor: "#ffffff",
     backgroundColor: "#000000",
@@ -18,7 +18,16 @@ var data = {
     maxLineWidth: .5,
     speedX: 1,
     speedY: 1,
-    speedZ: 1
+    speedZ: 1,
+    redMin: 0,
+    redMax: 255,
+    greenMin: 0,
+    greenMax: 255,
+    blueMin: 0,
+    blueMax: 255,
+    rColorChangeRate: 2,
+    gColorChangeRate: 2,
+    bColorChangeRate: 2
 
 };
 
@@ -31,6 +40,22 @@ function drawCircle(circleData) {
     ctx.fill();
 }
 
+function createRandomColor() {
+    var rValue = Math.floor(Math.random() * (data.redMax - data.redMin));
+    var gValue = Math.floor(Math.random() * (data.greenMax - data.greenMin));
+    var bValue = Math.floor(Math.random() * (data.blueMax - data.blueMin));
+    var rHex =rValue.toString(16);
+    if(rHex.length == 1) {rHex = "0" + rHex};
+    var gHex =gValue.toString(16);
+    if(gHex.length == 1) {gHex = "0" + gHex};
+    var bHex =bValue.toString(16);
+    if(bHex.length == 1) {bHex = "0" + bHex};
+
+    var fullHex = "#" + rHex + gHex + bHex;
+
+    return fullHex
+}
+
 // data object options:
 // x, y, z, r, color, dx, dy, dz
 function fillData() {
@@ -39,12 +64,15 @@ function fillData() {
         var y = Math.random() * data.boundingHeight;
         var z = Math.random() * data.boundingDepth;
         var r = data.maxR;
-        var color = data.ballColor;
+        var color = createRandomColor();
+        var rColorChangeVal = (Math.random() * (2 * data.rColorChangeRate)) - data.rColorChangeRate;
+        var gColorChangeVal = (Math.random() * (2 * data.gColorChangeRate)) - data.gColorChangeRate;
+        var bColorChangeVal = (Math.random() * (2 * data.bColorChangeRate)) - data.bColorChangeRate;
         var dx = (Math.random() * data.speedX) - (data.speedX/2);
         var dy = (Math.random() * data.speedY) - (data.speedY/2);
         var dz = (Math.random() * data.speedZ) - (data.speedZ/2);
 
-        circles.push({x, y, z, r, color, dx, dy, dz});
+        circles.push({x, y, z, r, color, rColorChangeVal, gColorChangeVal, bColorChangeVal, dx, dy, dz});
     }
 }
 
@@ -74,10 +102,14 @@ function drawLines() {
             
 
             if(dist < data.maxLineLength) {
+                var gradient =ctx.createLinearGradient(circles[i].x, circles[i].y, circles[j].x, circles[j].y);
+                gradient.addColorStop("0", circles[i].color);
+                gradient.addColorStop("1.0", circles[j].color);
+
                 ctx.beginPath();
                 ctx.moveTo(circles[i].x, circles[i].y);
                 ctx.lineTo(circles[j].x, circles[j].y);
-                ctx.strokeStyle = data.lineColor;
+                ctx.strokeStyle = gradient;
                 ctx.lineWidth = currentLineWidth;
                 ctx.stroke()
             }
@@ -117,6 +149,38 @@ function calculatePosChange() {
 
         circles[i].r = final;
 
+        // calculateColorChange
+        var r = circles[i].color.slice(1, 3);
+        var g = circles[i].color.slice(3, 5);
+        var b = circles[i].color.slice(5, 7);
+        r = parseInt(r, 16);
+        g = parseInt(g, 16);
+        b = parseInt(b, 16);
+        // if red is inside constraint
+        if(r + circles[i].rColorChangeVal > data.redMax || r + circles[i].rColorChangeVal < data.redMin) {
+            circles[i].rColorChangeVal = circles[i].rColorChangeVal * -1;
+        } 
+        r = Math.floor(r + circles[i].rColorChangeVal);
+
+        if(g + circles[i].gColorChangeVal > data.greenMax || g + circles[i].gColorChangeVal < data.greenMin) {
+            circles[i].gColorChangeVal = circles[i].gColorChangeVal * -1;
+        } 
+        g = Math.floor(g + circles[i].gColorChangeVal);
+
+        if(b + circles[i].bColorChangeVal > data.blueMax || b + circles[i].bColorChangeVal < data.blueMin) {
+            circles[i].bColorChangeVal = circles[i].bColorChangeVal * -1;
+        } 
+        b = Math.floor(b + circles[i].bColorChangeVal);
+
+        r = r.toString(16);
+        g = g.toString(16);
+        b = b.toString(16);
+
+        if(r.length == 1) {r = "0" + r};
+        if(g.length == 1) {g = "0" + g};
+        if(b.length == 1) {b = "0" + b};
+
+        circles[i].color = "#" + r + g + b;
     }
 }
 
